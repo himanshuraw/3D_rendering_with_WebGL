@@ -10,6 +10,7 @@ export class Model {
         this.indexBuffer = null;
         this.transform = new Transform();
         this.selected = false;
+        this.isSelectable = true;
 
         this.triangles = [];
 
@@ -27,18 +28,24 @@ export class Model {
         }
     }
 
-    updateColor(color) {
-        this.color = this.selected ? color : this.baseColor;
-    }
 
     select() {
         this.selected = !this.selected;
-        this.updateColor([1, 0.5, 0]);
+        this.selected ? this.updateColor([1, 0.5, 0]) : this.updateColor(this.baseColor)
     }
 
     deselect() {
         this.selected = false;
         this.updateColor(this.baseColor)
+    }
+
+    updateColor(color) {
+        this.color = color;
+    }
+
+    fixColor(color) {
+        this.color = color;
+        this.baseColor = color
     }
 
     async load() {

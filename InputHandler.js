@@ -146,6 +146,7 @@ export class InputHandler {
         let closestDistance = Infinity;
 
         this.scene.getModels().forEach(model => {
+            if (!model.isSelectable) return;
             if (!this.intersectsBoundingSphere(ray, model)) return;
 
             const distance = this.getIntersectionDistance(ray, model);

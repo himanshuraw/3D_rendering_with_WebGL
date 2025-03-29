@@ -1,3 +1,4 @@
+import { Axes } from "./Axes.js";
 import { Camera } from "./Camera.js";
 import { InputHandler } from "./InputHandler.js";
 import { Model } from "./Model.js";
@@ -15,6 +16,10 @@ async function main() {
 
     const scene = new Scene();
     const camera = new Camera();
+
+    const axes = new Axes(gl);
+    await axes.load();
+    axes.addToScene(scene)
 
     const model = new Model(gl, 'assets/Cage.obj');
     await model.load();
