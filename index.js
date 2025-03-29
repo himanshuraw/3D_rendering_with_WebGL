@@ -1,4 +1,5 @@
 import { Camera } from "./Camera.js";
+import { InputHandler } from "./InputHandler.js";
 import { Model } from "./Model.js";
 import { Scene } from "./Scene.js";
 import { Shader } from "./Shader.js";
@@ -8,7 +9,6 @@ import { WebGLRenderer } from "./WebGLRenderer.js";
 
 async function main() {
     const renderer = new WebGLRenderer();
-
     document.body.appendChild(renderer.getCanvas());
     const gl = renderer.glContext();
     const canvas = renderer.getCanvas();
@@ -22,6 +22,8 @@ async function main() {
 
     const shader = new Shader(gl, vsSource, fsSource);
     shader.use();
+
+    new InputHandler(canvas, scene)
 
     function animate() {
         camera.updateViewMatrix();
