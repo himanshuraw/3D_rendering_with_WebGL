@@ -20,10 +20,14 @@ async function main() {
     await model.load();
     scene.add(model);
 
+    // const model1 = new Model(gl, 'assets/cube.obj');
+    // await model1.load();
+    // scene.add(model1);
+
     const shader = new Shader(gl, vsSource, fsSource);
     shader.use();
 
-    new InputHandler(canvas, scene)
+    new InputHandler(canvas, scene, camera)
 
     function animate() {
         camera.updateViewMatrix();

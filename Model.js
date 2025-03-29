@@ -11,6 +11,8 @@ export class Model {
         this.transform = new Transform();
         this.selected = false;
 
+        this.triangles = [];
+
         this.baseColor = [
             Math.random(),
             Math.random(),
@@ -18,15 +20,25 @@ export class Model {
         ];
 
         this.color = [...this.baseColor];
+
+        this.boundingSphere = {
+            center: vec3.create(),
+            radius: 0,
+        }
     }
 
     updateColor(color) {
-        this.color = this.selected ? color : baseColor;
+        this.color = this.selected ? color : this.baseColor;
     }
 
     select() {
         this.selected = !this.selected;
         this.updateColor([1, 0.5, 0]);
+    }
+
+    deselect() {
+        this.selected = false;
+        this.updateColor(this.baseColor)
     }
 
     async load() {
@@ -80,6 +92,61 @@ export class Model {
 
         this.vertices = new Float32Array(vertices);
         this.indices = new Uint16Array(indices);
+
+        this.triangles = [];
+        for (let i = 0; i < this.indices.length; i += 3) {
+            const v0Index = this.indices[i];
+            const v1Index = this.indices[i + 1];
+            const v2Index = this.indices[i + 2];
+
+            const v0 = vec3.fromValues(
+                this.vertices[v0Index * 6],
+                this.vertices[v0Index * 6 + 1],
+                this.vertices[v0Index * 6 + 2]
+            );
+
+            const v1 = vec3.fromValues(
+                this.vertices[v1Index * 6],
+                this.vertices[v1Index * 6 + 1],
+                this.vertices[v1Index * 6 + 2]
+            );
+
+            const v2 = vec3.fromValues(
+                this.vertices[v2Index * 6],
+                this.vertices[v2Index * 6 + 1],
+                this.vertices[v2Index * 6 + 2]
+            );
+
+            this.triangles.push({ v0, v1, v2 });
+        }
+
+
+        this.calculateBoundingSphere();
+    }
+
+    calculateBoundingSphere() {
+        const positions = this.vertices.filter((_, i) => i % 6 < 3);
+        const center = vec3.create();
+
+        let maxDistance = 0;
+
+        positions.forEach((_, i) => {
+            if (i % 3 === 0) {
+                vec3.add(center, center, positions.subarray(i, i + 3));
+            }
+        });
+
+        vec3.scale(center, center, 1 / (positions.length / 3));
+
+        positions.forEach((_, i) => {
+            if (i % 3 === 0) {
+                const distance = vec3.distance(center, positions.subarray(i, i + 3));
+                maxDistance = Math.max(maxDistance, distance);
+            }
+        });
+
+        this.boundingSphere.center = center;
+        this.boundingSphere.radius = maxDistance;
     }
 
     setupBuffers() {
