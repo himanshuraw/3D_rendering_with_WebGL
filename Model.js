@@ -9,12 +9,24 @@ export class Model {
         this.vertexBuffer = null;
         this.indexBuffer = null;
         this.transform = new Transform();
+        this.selected = false;
 
-        this.color = [
+        this.baseColor = [
             Math.random(),
             Math.random(),
             Math.random(),
-        ]
+        ];
+
+        this.color = [...this.baseColor];
+    }
+
+    updateColor(color) {
+        this.color = this.selected ? color : baseColor;
+    }
+
+    select() {
+        this.selected = !this.selected;
+        this.updateColor([1, 0.5, 0]);
     }
 
     async load() {
