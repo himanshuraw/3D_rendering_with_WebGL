@@ -10,7 +10,8 @@ export const fsSource = `
 
         float diff1 = max(dot(vNormal, front_light), 0.0);
         float diff2 = max(dot(vNormal, back_light), 0.0);
+        float ambient = 0.2;
 
-        gl_FragColor = vec4(vec3(diff1 + diff2) * u_color, 1.0);
+        gl_FragColor = vec4(vec3(ambient + diff1 + diff2) * u_color, 1.0);
     }
 `;
