@@ -28,7 +28,7 @@ export class Transform {
     }
 
     scaleBy(sx, sy, sz) {
-        vec3.add(this.scale, this.scale, vec3.fromValues(sx, sy, sz));
+        vec3.multiply(this.scale, this.scale, vec3.fromValues(sx, sy, sz));
     }
 
     updateModelMatrix() {

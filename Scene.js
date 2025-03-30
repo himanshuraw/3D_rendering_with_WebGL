@@ -1,6 +1,7 @@
 export class Scene {
     constructor() {
         this.models = [];
+        this.selectedModel = null;
     }
 
     add(model) {

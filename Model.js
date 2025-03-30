@@ -11,6 +11,7 @@ export class Model {
         this.transform = new Transform();
         this.selected = false;
         this.isSelectable = true;
+        this.transformationAxis = 'x';
 
         this.triangles = [];
 
@@ -46,6 +47,28 @@ export class Model {
     fixColor(color) {
         this.color = color;
         this.baseColor = color
+    }
+
+    setTransformationAxis(axis) {
+        this.transformationAxis = axis;
+    }
+
+    handleRotation(delta) {
+        switch (this.transformationAxis) {
+            case 'x':
+                this.transform.rotateBy(delta, 0, 0);
+                break;
+            case 'y':
+                this.transform.rotateBy(0, delta, 0);
+                break;
+            case 'z':
+                this.transform.rotateBy(0, 0, delta);
+                break;
+        }
+    }
+
+    handleScaling(scalingFactor) {
+        this.transform.scaleBy(scalingFactor, scalingFactor, scalingFactor)
     }
 
     async load() {

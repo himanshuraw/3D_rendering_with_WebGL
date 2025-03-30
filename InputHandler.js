@@ -3,7 +3,7 @@ export class InputHandler {
         this.canvas = canvas;
         this.scene = scene;
         this.camera = camera;
-        this.speed = 0.1;
+        this.sensitivity = 0.01;
 
         this.keys = {};
 
@@ -18,6 +18,8 @@ export class InputHandler {
                 right: false,
             }
         }
+
+        this.transformMode = 'none';
 
         this.canvas.onauxclick = (e) => { e.preventDefault() }
         this.canvas.addEventListener('contextmenu', (e) => {
@@ -68,8 +70,22 @@ export class InputHandler {
         this.mouse.dx = e.clientX - this.mouse.x;
         this.mouse.dy = e.clientY - this.mouse.y;
 
-        if (this.mouse.button.middle) {
+        if (this.camera.mode === 'orbit' && this.mouse.button.middle) {
             this.camera.rotate(this.mouse.dx, this.mouse.dy)
+        }
+
+        if (this.camera.mode === 'top') {
+            if (this.scene.selectedModel && this.mouse.button.middle) {
+                switch (this.transformMode) {
+                    case 'rotate':
+                        this.scene.selectedModel.handleRotation(this.mouse.dy * this.sensitivity);
+                        break;
+
+                    case 'scale':
+                        this.scene.selectedModel.handleScaling(1 - (this.mouse.dy * this.sensitivity));
+                        break;
+                }
+            }
         }
 
         this.mouse.x = e.clientX;
@@ -85,14 +101,20 @@ export class InputHandler {
                 e.preventDefault();
                 this.camera.toggleViewMode();
                 break;
+            case 'r':
+                this.transformMode = this.transformMode === 'rotate' ? 'none' : 'rotate';
+                break;
+            case 's':
+                this.transformMode = this.transformMode === 'scale' ? 'none' : 'scale';
+                break;
             case 'x':
-                this.camera.setRotationAxis('x');
+                this.handleAxisKeys(key);
                 break;
             case 'y':
-                this.camera.setRotationAxis('y');
+                this.handleAxisKeys(key);
                 break;
             case 'z':
-                this.camera.setRotationAxis('z');
+                this.handleAxisKeys(key);
                 break;
             case ' ':
                 this.camera.setRotationAxis('free');
@@ -109,6 +131,8 @@ export class InputHandler {
 
         this.scene.getModels().forEach(model => {
             model == selectModel ? model.select() : model.deselect();
+            if (model.selected) this.scene.selectedModel = model;
+            else this.scene.selectedModel = null;
         })
     }
 
@@ -214,5 +238,14 @@ export class InputHandler {
         }
 
         return closestT === Infinity ? null : closestT;
+    }
+
+    handleAxisKeys(key) {
+        if (this.camera.mode === 'orbit') {
+            this.camera.setRotationAxis(key);
+        } else {
+            if (this.scene.selectedModel)
+                this.scene.selectedModel.setTransformationAxis(key);
+        }
     }
 }
