@@ -78,7 +78,24 @@ export class InputHandler {
             if (this.scene.selectedModel && this.mouse.button.middle) {
                 switch (this.transformMode) {
                     case 'rotate':
-                        this.scene.selectedModel.handleRotation(this.mouse.dy * this.sensitivity);
+                        const model = this.scene.selectedModel;
+                        if (model.transformationAxis) {
+                            let axis;
+                            switch (model.transformationAxis) {
+                                case 'x': axis = vec3.fromValues(1, 0, 0); break;
+                                case 'y': axis = vec3.fromValues(0, 1, 0); break;
+                                case 'z': axis = vec3.fromValues(0, 0, 1); break;
+                                default: return;
+                            }
+                            const angle = this.mouse.dx * this.sensitivity;
+                            model.transform.rotateBy(axis, angle);
+                        } else {
+                            const deltaQuat = this.calculateTrackballRotation(
+                                this.mouse.x, this.mouse.y,
+                                e.clientX, e.clientY
+                            );
+                            model.transform.rotateByQuaternion(deltaQuat);
+                        }
                         break;
 
                     case 'scale':
@@ -87,6 +104,7 @@ export class InputHandler {
                 }
             }
         }
+
 
         this.mouse.x = e.clientX;
         this.mouse.y = e.clientY;
@@ -118,7 +136,10 @@ export class InputHandler {
                 break;
             case ' ':
                 this.camera.setRotationAxis('free');
-                vec3.set(this.camera.up, 0, 1, 0)
+                vec3.set(this.camera.up, 0, 1, 0);
+                if (this.scene.selectedModel) {
+                    this.scene.selectedModel.setTransformationAxis(null);
+                }
                 break;
         }
     }
@@ -214,7 +235,6 @@ export class InputHandler {
 
         let closestT = Infinity;
         for (const triangle of model.triangles) {
-            // Möller–Trumbore implementation
             const edge1 = vec3.sub(vec3.create(), triangle.v1, triangle.v0);
             const edge2 = vec3.sub(vec3.create(), triangle.v2, triangle.v0);
             const h = vec3.cross(vec3.create(), localDirection, edge2);
@@ -247,5 +267,51 @@ export class InputHandler {
             if (this.scene.selectedModel)
                 this.scene.selectedModel.setTransformationAxis(key);
         }
+    }
+
+    calculateTrackballRotation(startX, startY, endX, endY) {
+        const rect = this.canvas.getBoundingClientRect();
+        const startCanvasX = startX - rect.left;
+        const startCanvasY = startY - rect.top;
+        const endCanvasX = endX - rect.left;
+        const endCanvasY = endY - rect.top;
+
+        const ndcStart = {
+            x: (startCanvasX / this.canvas.width) * 2 - 1,
+            y: -(startCanvasY / this.canvas.height) * 2 + 1
+        };
+
+        const ndcEnd = {
+            x: (endCanvasX / this.canvas.width) * 2 - 1,
+            y: -(endCanvasY / this.canvas.height) * 2 + 1
+        };
+
+        const startVec = this.projectToSphere(ndcStart.x, ndcStart.y);
+        const endVec = this.projectToSphere(ndcEnd.x, ndcEnd.y);
+
+        const axis = vec3.cross(vec3.create(), startVec, endVec);
+        vec3.normalize(axis, axis);
+
+        const angle = vec3.angle(startVec, endVec);
+
+        const deltaQuat = quat.create();
+        quat.setAxisAngle(deltaQuat, axis, angle);
+        return deltaQuat;
+    }
+
+    projectToSphere(x, y) {
+        const radius = 1.0;
+        const d = x * x + y * y;
+        let z;
+
+        if (d < radius * radius / 2) {
+            z = Math.sqrt(radius * radius - d);
+        } else {
+            z = (radius * radius) / (2 * Math.sqrt(d));
+        }
+
+        const vec = vec3.fromValues(x, y, z);
+        vec3.normalize(vec, vec);
+        return vec;
     }
 }

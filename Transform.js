@@ -1,8 +1,8 @@
-import { vec3, mat4 } from 'https://cdn.skypack.dev/gl-matrix';
+import { vec3, mat4, quat } from 'https://cdn.skypack.dev/gl-matrix';
 export class Transform {
     constructor() {
         this.position = vec3.fromValues(0, 0, 0);
-        this.rotation = vec3.fromValues(0, 0, 0);
+        this.rotation = quat.create();
         this.scale = vec3.fromValues(1, 1, 1);
         this.modelMatrix = mat4.create();
     }
@@ -12,7 +12,7 @@ export class Transform {
     }
 
     setRotate(x, y, z) {
-        vec3.set(this.rotation, x, y, z);
+        quat.fromEuler(this.rotation, x, y, z);
     }
 
     setScale(x, y, z) {
@@ -23,8 +23,20 @@ export class Transform {
         vec3.add(this.position, this.position, vec3.fromValues(dx, dy, dz));
     }
 
-    rotateBy(dx, dy, dz) {
-        vec3.add(this.rotation, this.rotation, vec3.fromValues(dx, dy, dz));
+    rotateBy(axis, angle) {
+        const q = quat.create();
+        quat.setAxisAngle(q, axis, angle);
+        quat.multiply(this.rotation, this.rotation, q);
+        quat.normalize(this.rotation, this.rotation);
+    }
+
+    rotateByQuaternion(q) {
+        quat.multiply(this.rotation, this.rotation, q);
+        quat.normalize(this.rotation, this.rotation);
+    }
+
+    setRotationFromQuaternion(q) {
+        quat.copy(this.rotation, q);
     }
 
     scaleBy(sx, sy, sz) {
@@ -34,9 +46,9 @@ export class Transform {
     updateModelMatrix() {
         mat4.identity(this.modelMatrix);
         mat4.translate(this.modelMatrix, this.modelMatrix, this.position);
-        mat4.rotateZ(this.modelMatrix, this.modelMatrix, this.rotation[2]);
-        mat4.rotateY(this.modelMatrix, this.modelMatrix, this.rotation[1]);
-        mat4.rotateX(this.modelMatrix, this.modelMatrix, this.rotation[0]);
+        const rotationMatrix = mat4.create();
+        mat4.fromQuat(rotationMatrix, this.rotation);
+        mat4.multiply(this.modelMatrix, this.modelMatrix, rotationMatrix);
         mat4.scale(this.modelMatrix, this.modelMatrix, this.scale);
     }
 }
