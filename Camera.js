@@ -1,7 +1,12 @@
 export class Camera {
     constructor(fov = 45, aspect = 1, near = 0.1, far = 100) {
+        this.aspect = 1;
+        this.fov = 45;
+        this.near = 0.1;
+        this.far = 100;
+
         this.mode = 'orbit';
-        this.position = vec3.fromValues(4, 2, 5);
+        this.position = vec3.fromValues(4, 5, 8);
         this.target = vec3.fromValues(0, 0, 0);
         this.up = vec3.fromValues(0, 1, 0);
 
@@ -15,8 +20,14 @@ export class Camera {
         this.updateViewMatrix();
     }
 
-    toggleViewMode() {
+    toggleViewMode(aspect) {
         this.mode = this.mode === 'orbit' ? 'top' : 'orbit';
+        if (this.mode === 'top') {
+            vec3.set(this.position, 0, 0, 10);
+            mat4.ortho(this.projectionMatrix, -5, 5, -5, 5, 0.1, 100);
+        } else {
+            mat4.perspective(this.projectionMatrix, this.fov, aspect, this.near, this.far);
+        }
         this.updateViewMatrix();
     }
 
@@ -76,11 +87,6 @@ export class Camera {
     }
 
     updateViewMatrix() {
-        if (this.mode === 'top') {
-            vec3.set(this.position, 0, 0, 10);
-            mat4.lookAt(this.viewMatrix, this.position, this.target, this.up);
-        } else {
-            mat4.lookAt(this.viewMatrix, this.position, this.target, this.up);
-        }
+        mat4.lookAt(this.viewMatrix, this.position, this.target, this.up);
     }
 }
