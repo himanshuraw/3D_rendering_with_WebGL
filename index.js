@@ -25,9 +25,15 @@ async function main() {
     await model.load();
     scene.add(model);
 
-    // const model1 = new Model(gl, 'assets/cube.obj');
+    // const model1 = new Model(gl, 'assets/Cube.obj');
     // await model1.load();
     // scene.add(model1);
+
+    const blenderSphere = new Model(gl, 'assets/BlenderSphere.obj');
+    await blenderSphere.load();
+    scene.add(blenderSphere);
+
+    console.log(scene.models)
 
     const shader = new Shader(gl, vsSource, fsSource);
     shader.use();
@@ -38,6 +44,17 @@ async function main() {
         camera.updateViewMatrix();
         shader.setUniformMatrix('uProjectionMatrix', camera.projectionMatrix);
         shader.setUniformMatrix('uViewMatrix', camera.viewMatrix);
+
+        scene.getModels().forEach(model => {
+            if (model.isMoving) {
+                model.updatePosition();
+                if (!model.isMoving) {
+                    model.deselect();
+                    scene.selectedModel = null;
+                }
+            }
+        });
+
         renderer.render(scene, shader);
         requestAnimationFrame(animate);
     }

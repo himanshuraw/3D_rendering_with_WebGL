@@ -44,6 +44,7 @@ export class InputHandler {
                 break;
             case 2:
                 this.mouse.button.right = true;
+                this.handleTransilation(e)
                 break;
         }
         this.mouse.x = e.clientX;
@@ -117,26 +118,41 @@ export class InputHandler {
         switch (key) {
             case 'tab':
                 e.preventDefault();
-                this.camera.toggleViewMode();
+                this.camera.toggleViewMode(1);
                 break;
+
             case 'r':
                 this.transformMode = this.transformMode === 'rotate' ? 'none' : 'rotate';
                 break;
+
             case 's':
                 this.transformMode = this.transformMode === 'scale' ? 'none' : 'scale';
                 break;
+
+            case 'arrowup':
+                if (this.scene.selectedModel) this.scene.selectedModel.speed += 0.002;
+                break;
+
+            case 'arrowdown':
+                if (this.scene.selectedModel) this.scene.selectedModel.speed = Math.max(0.001, this.scene.selectedModel.speed - 0.002);
+                break;
+
             case 'x':
                 this.handleAxisKeys(key);
                 break;
+
             case 'y':
                 this.handleAxisKeys(key);
                 break;
+
             case 'z':
                 this.handleAxisKeys(key);
                 break;
+
             case ' ':
                 this.camera.setRotationAxis('free');
                 vec3.set(this.camera.up, 0, 1, 0);
+
                 if (this.scene.selectedModel) {
                     this.scene.selectedModel.setTransformationAxis(null);
                 }
@@ -149,6 +165,8 @@ export class InputHandler {
 
         const ray = this.getMouseRay(e.clientX, e.clientY);
         const selectModel = this.raycast(ray);
+
+        if (!selectModel) return;
 
         this.scene.getModels().forEach(model => {
             model == selectModel ? model.select() : model.deselect();
@@ -230,7 +248,9 @@ export class InputHandler {
         mat4.invert(inverseMatrix, model.transform.modelMatrix);
 
         const localOrigin = vec3.transformMat4(vec3.create(), ray.origin, inverseMatrix);
-        const localDirection = vec3.transformMat4(vec3.create(), ray.direction, inverseMatrix);
+
+        const inverseMat3 = mat3.fromMat4(mat3.create(), inverseMatrix);
+        const localDirection = vec3.transformMat3(vec3.create(), ray.direction, inverseMat3);
         vec3.normalize(localDirection, localDirection);
 
         let closestT = Infinity;
@@ -266,6 +286,28 @@ export class InputHandler {
         } else {
             if (this.scene.selectedModel)
                 this.scene.selectedModel.setTransformationAxis(key);
+        }
+    }
+
+    handleTransilation(e) {
+        console.log(this.scene.selectedModel.pathPoints)
+        if (this.camera.mode === 'top' && this.scene.selectedModel && !this.scene.selectedModel.isMoving) {
+            const ray = this.getMouseRay(e.clientX, e.clientY);
+            const model = this.scene.selectedModel;
+
+            const targetZ = this.camera.target[2];
+            const t = (targetZ - ray.origin[2]) / ray.direction[2];
+
+            const worldPos = vec3.create();
+            vec3.scaleAndAdd(worldPos, ray.origin, ray.direction, t);
+
+            model.pathPoints.push(worldPos);
+
+            if (model.pathPoints.length === 2) {
+                const p0 = model.transform.position;
+                model.startPath(p0, model.pathPoints[0], model.pathPoints[1]);
+                model.pathPoints = [];
+            }
         }
     }
 

@@ -13,20 +13,20 @@ export class Model {
         this.isSelectable = true;
         this.transformationAxis = null;
 
-        this.triangles = [];
-
-        this.baseColor = [
-            Math.random(),
-            Math.random(),
-            Math.random(),
-        ];
-
+        this.baseColor = [Math.random(), Math.random(), Math.random()];
         this.color = [...this.baseColor];
 
+        this.triangles = [];
         this.boundingSphere = {
             center: vec3.create(),
             radius: 0,
         }
+
+        this.pathPoints = [];
+        this.pathCoefficients = { a: null, b: null, c: null }
+        this.currentT = 0;
+        this.isMoving = false;
+        this.speed = 0.005;
     }
 
 
@@ -109,7 +109,11 @@ export class Model {
         this.vertices = new Float32Array(vertices);
         this.indices = new Uint16Array(indices);
 
-        this.triangles = [];
+        this.calculateTriangles();
+        this.calculateBoundingSphere();
+    }
+
+    calculateTriangles() {
         for (let i = 0; i < this.indices.length; i += 3) {
             const v0Index = this.indices[i];
             const v1Index = this.indices[i + 1];
@@ -135,9 +139,6 @@ export class Model {
 
             this.triangles.push({ v0, v1, v2 });
         }
-
-
-        this.calculateBoundingSphere();
     }
 
     calculateBoundingSphere() {
@@ -163,6 +164,41 @@ export class Model {
 
         this.boundingSphere.center = center;
         this.boundingSphere.radius = maxDistance;
+    }
+
+    startPath(p0, p1, p2) {
+        const a = vec3.create();
+        const b = vec3.create();
+        const c = vec3.create();
+
+        vec3.add(a, p0, p2);
+        vec3.scale(a, a, 2);
+        vec3.subtract(a, a, vec3.scale(vec3.create(), p1, 4));
+
+        const temp = vec3.create();
+        vec3.scale(temp, p1, 4);
+        vec3.subtract(b, temp, vec3.scale(vec3.create(), p0, 3));
+        vec3.subtract(b, b, p2);
+
+        vec3.copy(c, p0);
+
+        this.pathCoefficients = { a, b, c };
+        this.currentT = 0;
+        this.isMoving = true;
+    }
+
+    updatePosition() {
+        if (!this.isMoving) return;
+        this.currentT = Math.min(this.currentT + this.speed, 1);
+
+        const t = this.currentT;
+        const pos = vec3.create();
+        vec3.scaleAndAdd(pos, this.pathCoefficients.c, this.pathCoefficients.b, t);
+        vec3.scaleAndAdd(pos, pos, this.pathCoefficients.a, t * t);
+        this.transform.setTranslate(pos[0], pos[1], pos[2]);
+        this.transform.updateModelMatrix();
+
+        if (this.currentT >= 1) this.isMoving = false;
     }
 
     setupBuffers() {
