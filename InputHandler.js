@@ -169,9 +169,10 @@ export class InputHandler {
         if (!selectModel) return;
 
         const models = this.scene.getModels();
+        let found = false;
+
         for (let i = 0; i < models.length; i++) {
             const model = models[i];
-            console.log(model.path);
 
             if (model === selectModel) {
                 model.select();
@@ -181,10 +182,12 @@ export class InputHandler {
 
             if (model.selected) {
                 this.scene.selectedModel = model;
-                break;
-            } else {
-                this.scene.selectedModel = null;
+                found = true;
             }
+        }
+
+        if (!found) {
+            this.scene.selectedModel = null;
         }
     }
 
@@ -314,7 +317,6 @@ export class InputHandler {
             vec3.scaleAndAdd(worldPos, ray.origin, ray.direction, t);
 
             model.pathPoints.push(worldPos);
-            console.log(model.pathPoints)
 
             if (model.pathPoints.length === 2) {
                 const p0 = model.transform.position;
