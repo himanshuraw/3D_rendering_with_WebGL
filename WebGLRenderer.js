@@ -8,8 +8,8 @@ export class WebGLRenderer {
         }
 
         this.gl.enable(this.gl.DEPTH_TEST);
-        this.setSize(900, 900);
-        this.clear(0.5, 0.5, 0.5, 1);
+        this.setSize(930, 930);
+        this.clear(0.9, 0.9, 0.9, 1);
     }
 
     setSize(width, height) {
@@ -24,7 +24,7 @@ export class WebGLRenderer {
     }
 
     render(scene, shader) {
-        this.clear(0, 0, 0, 1);
+        this.clear(0.9, 0.9, 0.9, 1);
         scene.render(this, shader);
     }
 
