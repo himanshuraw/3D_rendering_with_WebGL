@@ -10,9 +10,11 @@ import { WebGLRenderer } from "./WebGLRenderer.js";
 
 async function main() {
     const renderer = new WebGLRenderer();
-    document.body.appendChild(renderer.getCanvas());
-    const gl = renderer.glContext();
     const canvas = renderer.getCanvas();
+
+    setupWindow(canvas);
+
+    const gl = renderer.glContext();
 
     const scene = new Scene();
     const camera = new Camera();
@@ -58,6 +60,11 @@ async function main() {
     }
 
     animate();
+}
+
+function setupWindow(canvas) {
+    const mainElement = document.querySelector('main')
+    mainElement.appendChild(canvas);
 }
 
 main();

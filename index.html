@@ -6,10 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebGL 3D Model Viewer</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gl-matrix/2.8.1/gl-matrix-min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
     <script type="module" src="index.js"></script>
 </head>
 
 <body>
+    <div id="container">
+        <main>
+        </main>
+        <article>
+            <div class="card">
+                <h1>Top view</h1>
+                <hr>
+                <p><b>Left mouse button</b> - Select / deselect model</p>
+                <p><b>Right mouse button</b> - Select two points for transilation </p>
+
+                <div class="indented">
+                    <p><b>R</b> - Enable / disable rotation </p>
+                    <p><b>S</b> - Enable / disable scaling </p>
+                    <p><b>Middle mouse button</b> - Hold and drag mouse to scale or rotate </p>
+                    <p><b>X</b> - Change rotation axis to x </p>
+                    <p><b>Y</b> - Change rotation axis to y </p>
+                    <p><b>Z</b> - Change rotation axis to z </p>
+                    <p><b>Space</b> - Change rotation axis to arbitrary </p>
+                </div>
+            </div>
+            <div class="card">
+
+                <h1>3D view</h1>
+                <hr>
+                <p><b>Middle mouse button</b> - Hold and drag mouse to rotate camera</p>
+                <p><b>X</b> - Change rotation axis to x </p>
+                <p><b>Y</b> - Change rotation axis to y </p>
+                <p><b>Z</b> - Change rotation axis to z </p>
+                <p><b>Space</b> - Change rotation axis to arbitrary </p>
+            </div>
+
+            <div>
+                <hr>
+                <h1>Tab - Toggle view</h1>
+                <hr>
+            </div>
+        </article>
+    </div>
 </body>
 
 </html>
