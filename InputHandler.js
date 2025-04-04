@@ -168,11 +168,24 @@ export class InputHandler {
 
         if (!selectModel) return;
 
-        this.scene.getModels().forEach(model => {
-            model == selectModel ? model.select() : model.deselect();
-            if (model.selected) this.scene.selectedModel = model;
-            else this.scene.selectedModel = null;
-        })
+        const models = this.scene.getModels();
+        for (let i = 0; i < models.length; i++) {
+            const model = models[i];
+            console.log(model.path);
+
+            if (model === selectModel) {
+                model.select();
+            } else {
+                model.deselect();
+            }
+
+            if (model.selected) {
+                this.scene.selectedModel = model;
+                break;
+            } else {
+                this.scene.selectedModel = null;
+            }
+        }
     }
 
     getMouseRay(x, y) {
@@ -290,18 +303,18 @@ export class InputHandler {
     }
 
     handleTransilation(e) {
-        console.log(this.scene.selectedModel.pathPoints)
         if (this.camera.mode === 'top' && this.scene.selectedModel && !this.scene.selectedModel.isMoving) {
             const ray = this.getMouseRay(e.clientX, e.clientY);
             const model = this.scene.selectedModel;
 
-            const targetZ = this.camera.target[2];
-            const t = (targetZ - ray.origin[2]) / ray.direction[2];
+            const randomZ = Math.random() * 5 - 2.5;
+            const t = (randomZ - ray.origin[2]) / ray.direction[2];
 
             const worldPos = vec3.create();
             vec3.scaleAndAdd(worldPos, ray.origin, ray.direction, t);
 
             model.pathPoints.push(worldPos);
+            console.log(model.pathPoints)
 
             if (model.pathPoints.length === 2) {
                 const p0 = model.transform.position;

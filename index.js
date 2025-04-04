@@ -33,8 +33,6 @@ async function main() {
     await blenderSphere.load();
     scene.add(blenderSphere);
 
-    console.log(scene.models)
-
     const shader = new Shader(gl, vsSource, fsSource);
     shader.use();
 
