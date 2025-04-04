@@ -12,8 +12,9 @@ export class Model {
         this.selected = false;
         this.isSelectable = true;
         this.transformationAxis = null;
+        this.selectionColor = [1, 0.5, 0];
 
-        this.baseColor = [Math.random(), Math.random(), Math.random()];
+        this.baseColor = this.generateRandomColor();
         this.color = [...this.baseColor];
 
         this.triangles = [];
@@ -29,10 +30,29 @@ export class Model {
         this.speed = 0.005;
     }
 
+    generateRandomColor() {
+        let color;
+        do {
+            color = [Math.random(), Math.random(), Math.random()];
+        } while (this.colorDistance(color, this.selectionColor) < 0.25);
+        return color;
+    }
+
+    colorDistance(c1, c2) {
+        const y1 = c1[0] * 0.299;
+        const i1 = c1[1] * 0.587;
+        const q1 = c1[2] * 0.114;
+
+        const y2 = c2[0] * 0.299;
+        const i2 = c2[1] * 0.587;
+        const q2 = c2[2] * 0.114;
+
+        return Math.sqrt((y1 - y2) ** 2 + (i1 - i2) ** 2 + (q1 - q2) ** 2);
+    }
 
     select() {
         this.selected = !this.selected;
-        this.selected ? this.updateColor([1, 0.5, 0]) : this.updateColor(this.baseColor)
+        this.selected ? this.updateColor(this.selectionColor) : this.updateColor(this.baseColor)
     }
 
     deselect() {
